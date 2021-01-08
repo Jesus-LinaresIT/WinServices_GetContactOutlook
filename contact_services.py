@@ -45,70 +45,70 @@ class GetContactOutlook():
 
 
   def getDifferenceLists(self, contacts):
-    try:
-      if not self.__ifpath_contacts:
-        return self.updateListContact(contacts)
-      else:
-        with open (self.__path_files_csv, newline ='') as csv_file:
+    #try:
+    if not self.__ifpath_contacts:
+      return self.__updateListContact(contacts)
+    else:
+      with open (self.__path_files_csv, newline ='') as csv_file:
 
-          csvreader = csv.DictReader(csv_file)
-          contact_list = [row for row in csvreader]
-            # get the list of data type OrderedDict
-            # from the already created CSV file
+        csvreader = csv.DictReader(csv_file)
+        contact_list = [row for row in csvreader]
+          # get the list of data type OrderedDict
+          # from the already created CSV file
 
-        clist = [dict(d) for d in contact_list]
-        # get a flat dictionary list without being of type OrderedDict
+      clist = [dict(d) for d in contact_list]
+      # get a flat dictionary list without being of type OrderedDict
 
-        contact_difference = [item for item in contacts if item not in clist]
-        # comprehension list for get difference between of two lists
+      contact_difference = [item for item in contacts if item not in clist]
+      # comprehension list for get difference between of two lists
 
-        return self.saveNewContact(contact_difference, contacts)
-    except:
-      exit()
+      return self.__saveNewContact(contact_difference, contacts)
+    #except:
+      #exit()
 
 
-  def updateListContact(self, contacts):
+  def __updateListContact(self, contacts):
     """Function that only runs once as long
     as the contacts.csv file is not created"""
 
-    try:
-      with open (self.__path_files_csv, 'w', newline ='') as new_file:
+    #try:
+    with open (self.__path_files_csv, 'w', newline ='') as new_file:
 
-        header = ['fullName', 'email']
-        writeFile = csv.DictWriter(new_file, fieldnames= header)
-        writeFile.writeheader()
+      header = ['fullName', 'email']
+      writeFile = csv.DictWriter(new_file, fieldnames= header)
+      writeFile.writeheader()
 
-        for row in contacts:
-          writeFile.writerow(row)
+      for row in contacts:
+        writeFile.writerow(row)
 
-      if not self.__ifpath_contacts_new:
-        return self.sendtoConstantContact()
-    except:
-      exit()
+    if not self.__ifpath_contacts_new:
+      return self.__sendtoConstantContact()
+    #except:
+      #exit()
 
 
-  def saveNewContact(self, contacts_dif, data_contacts):
+  def __saveNewContact(self, contacts_dif, data_contacts):
     """Function that only runs once as long as
     the contacts.csv file is not created """
 
-    try:
-      with open (self.__path_files_csv_new, 'w', newline ='') as file:
+    #try:
+    with open (self.__path_files_csv_new, 'w', newline ='') as file:
 
-        header = ['fullName', 'email']
+      header = ['fullName', 'email']
 
-        writeFile = csv.DictWriter(file, fieldnames= header)
-        writeFile.writeheader()
+      writeFile = csv.DictWriter(file, fieldnames= header)
+      writeFile.writeheader()
 
-        for row in contacts_dif:
-          writeFile.writerow(row)
+      for row in contacts_dif:
+        writeFile.writerow(row)
 
-        self.updateListContact(data_contacts)
-        self.sendtoConstantContact()
-    except:
-      exit()
+      self.__updateListContact(data_contacts)
+      self.__sendtoConstantContact()
+    #except:
+      #exit()
 
 
-  def sendtoConstantContact(self):
+  def __sendtoConstantContact(self):
 
     headers = {'Authorization': self.__key,
                 'content-type': 'multipart/form-data',
@@ -124,23 +124,11 @@ class GetContactOutlook():
 
     else:
       files = {'file_name': ('Newcontacts.csv', open(self.__path_files_csv_new, 'rb')),
-                'list_ids' : __list_ids}
+                'list_ids' : self.__list_ids}
       response = requests.post(self.__url, headers=headers, files= files)
 
       print(response)
       exit()
 
 
-
-
 win_service = GetContactOutlook()
-
-#get_contact = win_service.getContacts()
-#func_difference = win_service.getDifferenceLists(get_contact)
-
-
-#schedule.every(10).seconds.do(func_difference, get_contact)
-
-""" while 1:
-  schedule.run_pending()
-  time.sleep(1) """

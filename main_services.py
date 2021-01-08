@@ -1,14 +1,12 @@
 from base_service import SMWinservice
 from win32.lib import win32evtlogutil
 from win32 import win32evtlog
-from outlook_connector import MSOutlook
+from contact_services import win_service
 
-from test2 import win_service
+import schedule, time
 
 get_contact = win_service.getContacts()
-func_difference = win_service.getDifferenceLists()
 
-DEBUG = 0
 
 class PythonContactConstant(SMWinservice):
   _svc_name_ = "ContactConstant"
@@ -23,8 +21,9 @@ class PythonContactConstant(SMWinservice):
 
   def main(self):
 
-    schedule.every(1).minutes.do(func_difference, get_contact)
-    #schedule.every().days().do(saveFile, contact)
+    schedule.every(10).seconds.do(win_service.getDifferenceLists, get_contact)
+    #schedule.every(1).minutes.do(win_service.getDifferenceLists, get_contact)
+    #schedule.every().days().do(win_service.getDifferenceLists, get_contact)
 
     while 1:
       schedule.run_pending()
