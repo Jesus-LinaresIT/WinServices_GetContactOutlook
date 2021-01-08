@@ -1,138 +1,146 @@
 from outlook_connector import MSOutlook
 from settings import Config
 
-import time, sys, schedule, csv, os.path, requests as r
+import time, sys, schedule, csv, os.path, requests
 
 
-_ifpath_contacts = Config.PATH_CONTACTS
-_ifpath_contacts_new = Config.PATH_CONTACTS_NEW
+class GetContactOutlook():
 
-path_files_csv = Config.PATH_CONTACTS_CSV
-path_files_csv_new = Config.PATH_CONTACTS_CSV_NEW
+  def __init__(self):
+    self.__ifpath_contacts = Config.PATH_CONTACTS
+    self.__ifpath_contacts_new = Config.PATH_CONTACTS_NEW
+    self.__path_files_csv = Config.PATH_CONTACTS_CSV
+    self.__path_files_csv_new = Config.PATH_CONTACTS_CSV_NEW
 
+    self.__url = Config.URI
+    self.__key = Config.API_KEY
+    self.__list_ids = Config.CONSTANT_CONTACT_LIST_IDS
 
-DEBUG = 0
+    self.DEBUG = 0
 
-def getContacts():
-    oOutlook = MSOutlook()
-    # delayed check for Outlook on win32 box
-    if not oOutlook.outlookFound:
-      sys.exit(1)
+  def getContacts(self):
+      oOutlook = MSOutlook()
+      # delayed check for Outlook on win32 box
+      if not oOutlook.outlookFound:
+        sys.exit(1)
 
-    fields = ['FullName','Email1Address']
+      fields = ['FullName','Email1Address']
 
-    if DEBUG:
-      startTime = time.time()
+      if self.DEBUG:
+        startTime = time.time()
 
-    # you can either get all of the data fields
-    # or just a specific set of fields which is much faster
-    #oOutlook.loadContacts()
-    oOutlook.loadContacts(fields)
+      # you can either get all of the data fields
+      # or just a specific set of fields which is much faster
+      #oOutlook.loadContacts()
+      oOutlook.loadContacts(fields)
 
-    contacts = []
-    for contact in oOutlook.records:
-      contacts.append({
-          "fullName": contact['FullName'],
-          "email": contact['Email1Address']
-      })
+      contacts = []
+      for contact in oOutlook.records:
+        contacts.append({
+            "fullName": contact['FullName'],
+            "email": contact['Email1Address']
+        })
 
-    return contacts
-
-
-def getDifferenceLists(contacts):
-  #try:
-  if not _ifpath_contacts:
-    return updateListContact(contacts)
-  else:
-    with open (path_files_csv, newline ='') as csv_file:
-      csvreader = csv.DictReader(csv_file)
-
-      contact_list = []
-      for row in csvreader:
-        contact_list.append(row)    # get the list of data type OrderedDict from the already created CSV file
-
-    clist = []
-    for d in contact_list:
-      clist.append(dict(d))     # get a flat dictionary list without being of type OrderedDict
-
-    contact_difference = [item for item in contacts if item not in clist]   #comprehension list for get difference between of two lists
-
-    return saveNewContact(contact_difference, contacts)
-  #except:
-    #exit()
+      return contacts
 
 
-def updateListContact(contacts):      # Function that only runs once as long as the contacts.csv file is not created
-  #try:
-  with open (path_files_csv, 'w', newline ='') as new_file:
+  def getDifferenceLists(self, contacts):
+    try:
+      if not self.__ifpath_contacts:
+        return self.updateListContact(contacts)
+      else:
+        with open (self.__path_files_csv, newline ='') as csv_file:
 
-    header = ['fullName', 'email']
-    writeFile = csv.DictWriter(new_file, fieldnames= header)
-    writeFile.writeheader()
+          csvreader = csv.DictReader(csv_file)
+          contact_list = [row for row in csvreader]
+            # get the list of data type OrderedDict
+            # from the already created CSV file
 
-    for row in contacts:
-      writeFile.writerow(row)
+        clist = [dict(d) for d in contact_list]
+        # get a flat dictionary list without being of type OrderedDict
 
-  if not _ifpath_contacts_new:
-    return sendtoConstantContact()
-  #except:
-    #exit()
+        contact_difference = [item for item in contacts if item not in clist]
+        # comprehension list for get difference between of two lists
 
-
-def saveNewContact(contacts_dif, data_contacts):      # Function that only runs once as long as the contacts.csv file is not created
-  #try:
-  print("ESTOY AQUI")
-  with open (path_files_csv_new, 'w', newline ='') as file:
-
-    header = ['fullName', 'email']
-
-    writeFile = csv.DictWriter(file, fieldnames= header)
-    writeFile.writeheader()
-
-    for row in contacts_dif:
-      writeFile.writerow(row)
-
-    updateListContact(data_contacts)
-    sendtoConstantContact()
-  #except:
-    exit()
+        return self.saveNewContact(contact_difference, contacts)
+    except:
+      exit()
 
 
-def sendtoConstantContact():
-  url = Config.URI
-  key = Config.API_KEY
-  headers = {'Authorization': 'Bearer <{key}>',
-              'content-type': 'multipart/form-data'}
+  def updateListContact(self, contacts):
+    """Function that only runs once as long
+    as the contacts.csv file is not created"""
 
-  if not _ifpath_contacts_new:
-    files = {'file_name': ('contacts.csv', open(path_files_csv, 'rb'))}
+    try:
+      with open (self.__path_files_csv, 'w', newline ='') as new_file:
 
+        header = ['fullName', 'email']
+        writeFile = csv.DictWriter(new_file, fieldnames= header)
+        writeFile.writeheader()
 
-    response = r.post(url, headers=headers, files= files)
-    print('llegue hasta aqui')
-    exit()
+        for row in contacts:
+          writeFile.writerow(row)
 
-  else:
-    file = {'file_name': 'Newcontacts.csv',
-        'data':('Newcontacts.csv', open(path_files_csv_new, 'rb'))}
-
-    list_ids = [key]
-
-    response = r.post(url, list_ids=list_ids, files= file)
-    print('llegue hasta aqui2')
-    exit()
+      if not self.__ifpath_contacts_new:
+        return self.sendtoConstantContact()
+    except:
+      exit()
 
 
+  def saveNewContact(self, contacts_dif, data_contacts):
+    """Function that only runs once as long as
+    the contacts.csv file is not created """
+
+    try:
+      with open (self.__path_files_csv_new, 'w', newline ='') as file:
+
+        header = ['fullName', 'email']
+
+        writeFile = csv.DictWriter(file, fieldnames= header)
+        writeFile.writeheader()
+
+        for row in contacts_dif:
+          writeFile.writerow(row)
+
+        self.updateListContact(data_contacts)
+        self.sendtoConstantContact()
+    except:
+      exit()
+
+
+  def sendtoConstantContact(self):
+
+    headers = {'Authorization': self.__key,
+                'content-type': 'multipart/form-data',
+                'Accept' : 'multipart/form-data'}
+
+    if not self.__ifpath_contacts_new:
+      files = {'file': ('contacts.csv', open(self.__path_files_csv, 'rb')),
+                'list_ids' : self.__list_ids}
+
+      response = requests.post(self.__url, headers=headers, files= files)
+      print(response)
+      exit()
+
+    else:
+      files = {'file_name': ('Newcontacts.csv', open(self.__path_files_csv_new, 'rb')),
+                'list_ids' : __list_ids}
+      response = requests.post(self.__url, headers=headers, files= files)
+
+      print(response)
+      exit()
 
 
 
-contacts = getContacts()
-getDifferenceLists(contacts)
+
+win_service = GetContactOutlook()
+
+#get_contact = win_service.getContacts()
+#func_difference = win_service.getDifferenceLists(get_contact)
 
 
+#schedule.every(10).seconds.do(func_difference, get_contact)
 
-#schedule.every(10).seconds.do(saveFile, getSometing)
-
-while 1:
+""" while 1:
   schedule.run_pending()
-  time.sleep(1)
+  time.sleep(1) """

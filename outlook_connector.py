@@ -15,9 +15,9 @@ class MSOutlook:
       except:
         exit()
         #print("MSOutlook: unable to load Outlook")
-      
+
       self.records = []
-      
+
   def loadContacts(self, keys=None):
       if not self.outlookFound:
           return
@@ -47,4 +47,3 @@ class MSOutlook:
               if DEBUG:
                   print( oc, record['FullName'])
               self.records.append(record)
-
