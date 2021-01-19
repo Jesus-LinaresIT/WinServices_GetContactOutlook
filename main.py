@@ -1,7 +1,8 @@
-from base_service import SMWinservice
+from outlook_se.servi.base_service import SMWinservice
+from outlook_se.servi.contact_services import win_service
 from win32.lib import win32evtlogutil
 from win32 import win32evtlog
-from contact_services import win_service
+
 
 import schedule, time
 
@@ -21,7 +22,7 @@ class PythonContactConstant(SMWinservice):
 
   def main(self):
 
-    schedule.every(10).seconds.do(win_service.getDifferenceLists, get_contact)
+    schedule.every(45).seconds.do(win_service.getDifferenceLists, get_contact)
     #schedule.every(1).minutes.do(win_service.getDifferenceLists, get_contact)
     #schedule.every().days().do(win_service.getDifferenceLists, get_contact)
 

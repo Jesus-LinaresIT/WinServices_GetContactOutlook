@@ -2,9 +2,7 @@ import socket
 import traceback
 import os
 
-
 from win32.lib import win32serviceutil as service_util
-import win32.win32api as win32_api
 
 import win32.servicemanager as service_manager
 import win32.win32event as win32event
@@ -30,7 +28,6 @@ class SMWinservice(service_util.ServiceFramework):
         Constructor of the winservice
         '''
         service_util.ServiceFramework.__init__(self, args)
-        win32_api.SetConsoleCtrlHandler(lambda x: True, True)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
         socket.setdefaulttimeout(60)
 
