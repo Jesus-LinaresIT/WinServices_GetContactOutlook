@@ -1,7 +1,4 @@
 import win32com.client
-import sys
-import csv
-import time
 
 DEBUG = 0
 
@@ -12,9 +9,8 @@ class MSOutlook:
         self.oOutlookApp = \
             win32com.client.gencache.EnsureDispatch("Outlook.Application")
         self.outlookFound = 1
-      except:
-        exit()
-        #print("MSOutlook: unable to load Outlook")
+      except Exception as e:
+        return e
 
       self.records = []
 

@@ -45,8 +45,8 @@ class SMWinservice(service_util.ServiceFramework):
         '''
         self.start()
         service_manager.LogMsg(service_manager.EVENTLOG_INFORMATION_TYPE,
-                              service_manager.PYS_SERVICE_STARTED,
-                              (self._svc_name_, ''))
+                            service_manager.PYS_SERVICE_STARTED,
+                            (self._svc_name_, ''))
         try: # try main
             self.main()
         except:

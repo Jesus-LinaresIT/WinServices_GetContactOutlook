@@ -1,8 +1,9 @@
 from outlook_se.conectors.outlook_connector import MSOutlook
 from settings import Config
 
-import time, sys, schedule, csv, os.path, requests
+import time, sys, csv, requests
 
+DEBUG = 0
 
 class GetContactOutlook():
 
@@ -14,36 +15,33 @@ class GetContactOutlook():
     self.__key = Config.API_KEY
     self.__list_ids = Config.CONSTANT_CONTACT_LIST_IDS
 
-    self.DEBUG = 0
 
   def getContacts(self):
-    try:
-      oOutlook = MSOutlook()
-      # delayed check for Outlook on win32 box
-      if not oOutlook.outlookFound:
-        sys.exit(1)
+      try:
+        oOutlook = MSOutlook()
+        # delayed check for Outlook on win32 box
+        if not oOutlook.outlookFound:
+          sys.exit(1)
 
-      fields = ['FullName','Email1Address']
+        fields = ['FullName','Email1Address']
 
-      if self.DEBUG:
-        startTime = time.time()
+        if DEBUG:
+          startTime = time.time()
 
-      # you can either get all of the data fields
-      # or just a specific set of fields which is much faster
-      #oOutlook.loadContacts()
-      oOutlook.loadContacts(fields)
+        # you can either get all of the data fields
+        # or just a specific set of fields which is much faster
+        #oOutlook.loadContacts()
+        oOutlook.loadContacts(fields)
 
-      contacts = []
-      for contact in oOutlook.records:
-        contacts.append({
-            "fullName": contact['FullName'],
-            "email": contact['Email1Address']
-        })
+        contacts = []
+        for contact in oOutlook.records:
+          contacts.append({
+              "fullName": contact['FullName'],
+              "email": contact['Email1Address']
+          })
         return contacts
-    except Exception as e:
-      print(e)
-
-
+      except Exception as e:
+        print(e)
 
   def getDifferenceLists(self, contacts):
       try:
@@ -85,7 +83,7 @@ class GetContactOutlook():
       return self.__sendtoConstantContact()
 
 
-  def __saveNewContact(self, contacts_dif, data_contacts):
+  def __saveNewContact(self, contact_difference, data_contacts):
     """Function that only runs once as long as
     the contacts.csv file is not created """
 
@@ -96,7 +94,7 @@ class GetContactOutlook():
       writeFile = csv.DictWriter(file, fieldnames= header)
       writeFile.writeheader()
 
-      for row in contacts_dif:
+      for row in contact_difference:
         writeFile.writerow(row)
 
       self.__updateListContact(data_contacts)
@@ -114,7 +112,7 @@ class GetContactOutlook():
         csvreader = csv.DictReader(csv_file)
 
       files = {'file_name': ('Newcontacts.csv', open(self.__path_files_csv_new, 'rb')),
-                'list_ids' : self__list_ids}
+                'list_ids' : self.__list_ids}
       response = requests.post(self.__url, headers=headers, files= files)
 
     except:
